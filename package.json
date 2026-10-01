@@ -1,0 +1,66 @@
+{
+  "name": "@nuxtjp/local-runtime",
+  "version": "0.1.0",
+  "description": "Fail-closed Nuxt client for a loopback local runtime",
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.29.3",
+  "engines": {
+    "node": "^22.0.0 || ^24.0.0",
+    "pnpm": ">=10 <11"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "src/runtime/shared/types.ts",
+    "LICENSE",
+    "README.md",
+    "NOTICE",
+    "LICENSE-PREVIOUS"
+  ],
+  "main": "./dist/module.mjs",
+  "types": "./dist/types.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.mts",
+      "import": "./dist/module.mjs"
+    },
+    "./client": {
+      "types": "./dist/runtime/client/index.d.ts",
+      "import": "./dist/runtime/client/index.js"
+    },
+    "./guards": {
+      "types": "./dist/runtime/shared/guards.d.ts",
+      "import": "./dist/runtime/shared/guards.js"
+    },
+    "./types": {
+      "types": "./src/runtime/shared/types.ts",
+      "default": "./src/runtime/shared/types.ts"
+    },
+    "./schema": "./schemas/local-runtime-v1.schema.json"
+  },
+  "scripts": {
+    "build": "nuxt-module-build build && nuxt build playground",
+    "typecheck": "vue-tsc --noEmit --project tsconfig.json",
+    "test": "vitest run",
+    "prepack": "pnpm run build"
+  },
+  "peerDependencies": {
+    "nuxt": "^4.5.0",
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@nuxt/kit": "4.5.0",
+    "@nuxt/schema": "4.5.0"
+  },
+  "devDependencies": {
+    "@nuxt/module-builder": "1.0.2",
+    "@types/node": "24.12.0",
+    "ajv": "8.20.0",
+    "nuxt": "4.5.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.6",
+    "vue": "3.5.39",
+    "vue-tsc": "3.2.8"
+  }
+}

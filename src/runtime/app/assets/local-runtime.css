@@ -1,0 +1,31 @@
+.nuxtjp-local-runtime {
+  align-items: flex-start;
+  background: #f6f8fb;
+  border: 1px solid #ccd4df;
+  border-radius: .75rem;
+  color: #1d2939;
+  display: flex;
+  gap: .75rem;
+  padding: 1rem;
+}
+
+.nuxtjp-local-runtime__indicator {
+  background: #667085;
+  border-radius: 999px;
+  height: .75rem;
+  margin-top: .3rem;
+  width: .75rem;
+}
+
+.nuxtjp-local-runtime[data-phase="connected"] .nuxtjp-local-runtime__indicator {
+  background: #067647;
+}
+
+.nuxtjp-local-runtime[data-phase="denied"] .nuxtjp-local-runtime__indicator,
+.nuxtjp-local-runtime[data-phase="unavailable"] .nuxtjp-local-runtime__indicator {
+  background: #b42318;
+}
+
+.nuxtjp-local-runtime p {
+  margin: .25rem 0 0;
+}

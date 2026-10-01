@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nuxt.jp/schemas/local-runtime-v1.schema.json",
+  "title": "NuxtJP local runtime contracts",
+  "oneOf": [
+    { "$ref": "#/$defs/manifest" },
+    { "$ref": "#/$defs/sessionRequest" },
+    { "$ref": "#/$defs/sessionGrant" },
+    { "$ref": "#/$defs/viewRequest" },
+    { "$ref": "#/$defs/view" }
+  ],
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "payloadField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "kind": { "enum": ["text", "count", "boolean"] }
+      }
+    },
+    "payloadSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "fields"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/payloadField" }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_request_bytes",
+        "max_response_bytes",
+        "max_messages_per_minute",
+        "max_bytes_per_minute",
+        "session_ttl_seconds"
+      ],
+      "properties": {
+        "max_request_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8388608
+        },
+        "max_messages_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "max_bytes_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 67108864
+        },
+        "session_ttl_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "status",
+        "isolation",
+        "arbitrary_network",
+        "arbitrary_filesystem"
+      ],
+      "properties": {
+        "kind": { "const": "rust-v8" },
+        "status": { "enum": ["disabled", "simulated", "ready"] },
+        "isolation": {
+          "enum": ["in-process-simulation", "process"]
+        },
+        "arbitrary_network": { "const": false },
+        "arbitrary_filesystem": { "const": false }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "ready" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": { "isolation": { "const": "process" } }
+          },
+          "else": {
+            "properties": {
+              "isolation": { "const": "in-process-simulation" }
+            }
+          }
+        }
+      ]
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "service_id",
+        "description",
+        "output_band",
+        "payload_schema"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" },
+        "service_id": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "output_band": { "enum": ["session", "public"] },
+        "payload_schema": { "$ref": "#/$defs/payloadSchema" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_band",
+        "external_egress",
+        "allowed_origins",
+        "limits"
+      ],
+      "properties": {
+        "default_band": { "const": "sealed" },
+        "external_egress": { "const": "deny" },
+        "allowed_origins": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^https?://[^/]+$"
+          }
+        },
+        "limits": { "$ref": "#/$defs/limits" }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "runtime_id",
+        "protocol_version",
+        "mode",
+        "external_actions",
+        "engine",
+        "security",
+        "capabilities"
+      ],
+      "properties": {
+        "schema": { "const": "nuxtjp://local-runtime/manifest/v1" },
+        "runtime_id": { "$ref": "#/$defs/text" },
+        "protocol_version": { "const": "1" },
+        "mode": { "enum": ["local-simulation", "local-production"] },
+        "external_actions": { "const": false },
+        "engine": { "$ref": "#/$defs/engine" },
+        "security": { "$ref": "#/$defs/security" },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/capability" }
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_messages", "max_bytes"],
+      "properties": {
+        "max_messages": { "$ref": "#/$defs/count" },
+        "max_bytes": { "$ref": "#/$defs/count" }
+      }
+    },
+    "sessionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "origin",
+        "audience",
+        "client_nonce",
+        "requested_capabilities"
+      ],
+      "properties": {
+        "schema": { "const": "nuxtjp://local-runtime/session-request/v1" },
+        "origin": {
+          "type": "string",
+          "pattern": "^https?://[^/]+$"
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^https?://[^/]+$"
+        },
+        "client_nonce": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "requested_capabilities": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "sessionGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "session_id",
+        "token",
+        "subject_id",
+        "audience",
+        "expires_at_unix_seconds",
+        "granted_capabilities",
+        "classification_ceiling",
+        "budget",
+        "external_actions"
+      ],
+      "properties": {
+        "schema": { "const": "nuxtjp://local-runtime/session-grant/v1" },
+        "session_id": { "$ref": "#/$defs/text" },
+        "token": { "$ref": "#/$defs/text" },
+        "subject_id": { "$ref": "#/$defs/text" },
+        "audience": { "$ref": "#/$defs/text" },
+        "expires_at_unix_seconds": { "$ref": "#/$defs/count" },
+        "granted_capabilities": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/text" }
+        },
+        "classification_ceiling": { "const": "session" },
+        "budget": { "$ref": "#/$defs/budget" },
+        "external_actions": { "const": false }
+      }
+    },
+    "viewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "capability_id",
+        "view_id",
+        "request_nonce"
+      ],
+      "properties": {
+        "schema": { "const": "nuxtjp://local-runtime/view-request/v1" },
+        "capability_id": { "$ref": "#/$defs/text" },
+        "view_id": { "$ref": "#/$defs/text" },
+        "request_nonce": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "capability_id",
+        "view_id",
+        "payload_schema_id",
+        "band",
+        "generated_at_unix_seconds",
+        "expires_at_unix_seconds",
+        "external_actions",
+        "payload"
+      ],
+      "properties": {
+        "schema": { "const": "nuxtjp://local-runtime/view/v1" },
+        "capability_id": { "$ref": "#/$defs/text" },
+        "view_id": { "$ref": "#/$defs/text" },
+        "payload_schema_id": { "$ref": "#/$defs/text" },
+        "band": { "enum": ["session", "public"] },
+        "generated_at_unix_seconds": { "$ref": "#/$defs/count" },
+        "expires_at_unix_seconds": { "$ref": "#/$defs/count" },
+        "external_actions": { "const": false },
+        "payload": {
+          "type": "object",
+          "maxProperties": 32,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string", "minLength": 1, "maxLength": 4096 },
+              { "$ref": "#/$defs/count" },
+              { "type": "boolean" }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
