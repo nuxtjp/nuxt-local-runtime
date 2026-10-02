@@ -1,40 +1,14 @@
 # @nuxtjp/local-runtime
 
-A product-neutral Nuxt module for explicitly connecting a browser UI to one
-local Rust runtime. It owns the loopback transport, closed runtime contracts,
-information-band rules, bounded responses, and a small connection-status UI.
+利用者の明示操作で、ブラウザ画面から設定済みのローカルRust環境へ接続できます。
 
-It does not discover files, call ecosystem services directly, store provider
-credentials, execute HATs, require Hatter, or send local data to a control
-plane. A product such as NERP or Hibee supplies its allowed web origin,
-requested capabilities, and presentation components.
+## 利用前の確認
 
-## Security model
+実装済みの範囲、必要な依存関係、検証コマンドを以下の英語説明に併記しています。操作・配備・公開は、それぞれの権限と設定を確認してから実施してください。
 
-The default is closed:
+## 導入・使い方
 
-- only numeric loopback endpoints are accepted;
-- connection starts only after an explicit `connect()` call;
-- redirects, cookies, ambient credentials, and referrers are prohibited;
-- response size and request size are bounded;
-- unknown fields and expanded security bands fail validation;
-- each capability declares an exact scalar payload schema which is rechecked
-  before product code receives a view;
-- `sealed` and `local` records cannot be returned to a browser;
-- external egress is not implemented by this package.
-
-The information bands are:
-
-| Band | Permitted boundary |
-| --- | --- |
-| `sealed` | originating process only |
-| `local` | authenticated local service mesh |
-| `session` | paired loopback browser session |
-| `control` | minimal external account/control metadata |
-| `public` | explicitly approved public information |
-
-`control` and `public` describe contracts. This client still has no method for
-external transmission.
+以下は現行インターフェースの利用例です。ローカル成果物の参照がある場合は、必要な版の成果物を先に準備してください。パッケージの公開配布は今回の作業では行いません。
 
 ## Nuxt usage
 
@@ -67,18 +41,34 @@ async function connect(): Promise<void> {
 The host must separately allow the page origin. Browser Local Network Access
 permission remains a user- and browser-controlled gate.
 
-## Independent verification
+## English
 
-```bash
-pnpm install --offline --frozen-lockfile
+Connect a browser interface to one explicitly configured local Rust runtime.
+
+## What you can do
+
+- Start a connection only after an explicit user operation.
+- Validate bounded loopback responses and display connection state.
+
+## Current scope
+
+The application supplies the allowed origin and capabilities. There is no automatic resource discovery or credential storage.
+
+Package distribution is not activated by this documentation. Use the checked-in source and the declared dependency versions; published availability must be verified separately.
+
+## Getting started
+
+Use `pnpm@10.29.3` and the Node.js version declared in `engines` in `package.json`. Run from this repository:
+
+```sh
+pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-The build also compiles `playground/` as a real Nuxt consumer. It renders a
-user-operated connect button and never opens a local session during SSR or
-page load.
+## Documentation and source
 
-The package is independent of NERP, Ecosystem Control, Hatter, and any individual
-ecosystem service.
+[Usage guide](docs/getting-started.md)
+
+[Schemas](schemas) · [Implementation and public interfaces](src) · [Verification cases](test) · [Contributing](CONTRIBUTING.md) · [Security reporting](SECURITY.md) · [License](LICENSE) · [Attribution notices](NOTICE)
