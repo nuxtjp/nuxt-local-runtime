@@ -4,7 +4,7 @@ Connect a browser interface to one explicitly configured local Rust runtime.
 
 ## Before you start
 
-The application supplies the allowed origin and capabilities. There is no automatic resource discovery or credential storage.
+The application supplies the allowed origin and capabilities. There is no automatic resource discovery or persistent credential storage.
 
 ## First steps
 
