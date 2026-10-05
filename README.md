@@ -8,7 +8,13 @@
 
 ## 導入・使い方
 
-以下は現行インターフェースの利用例です。ローカル成果物の参照がある場合は、必要な版の成果物を先に準備してください。パッケージの公開配布は今回の作業では行いません。
+以下は現行 API の利用例です。npm 上の配布状況を確認してから、対応版を install してください。ローカル TGZ の試験成功は、registry 配布の確認には含めません。
+
+```sh
+npm install @nuxtjp/local-runtime@0.1.0
+```
+
+Node ^22.19.0 / ^24.11.0、Nuxt ^4.5.1、Vue ^3.5.40 が必要です。
 
 ## Nuxt usage
 
@@ -52,9 +58,11 @@ Connect a browser interface to one explicitly configured local Rust runtime.
 
 ## Current scope
 
-The application supplies the allowed origin and capabilities. There is no automatic resource discovery or credential storage.
+The application supplies the allowed origin and capabilities. There is no automatic resource discovery or persistent credential storage.
 
-Package distribution is not activated by this documentation. Use the checked-in source and the declared dependency versions; published availability must be verified separately.
+Check npm availability before installation. Required hosts: Node ^22.19.0 or ^24.11.0, Nuxt ^4.5.1 and Vue ^3.5.40.
+The client and guards subpaths ship JavaScript and declarations; /types exposes the existing raw TypeScript definitions for type-only imports. /schema exposes the JSON schema.
+A Nuxt build must render the initial idle state without connecting to a runtime; connect() remains an explicit browser action.
 
 ## Getting started
 
@@ -69,6 +77,11 @@ pnpm build
 
 ## Documentation and source
 
-[Usage guide](docs/getting-started.md)
+[Usage guide](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/docs/getting-started.md)
 
-[Schemas](schemas) · [Implementation and public interfaces](src) · [Verification cases](test) · [Contributing](CONTRIBUTING.md) · [Security reporting](SECURITY.md) · [License](LICENSE) · [Attribution notices](NOTICE)
+[Schemas](schemas) · [Implementation and public interfaces](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/src) · [Verification cases](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/test) · [Contributing](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/CONTRIBUTING.md) · [Security reporting](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/SECURITY.md) · [License](LICENSE) · [Attribution notices](NOTICE)
+
+## Candidate changes
+
+Direct Nuxt/kit/schema pins 4.5.1, Vue 3.5.43 and Vitest 4.1.11 update the verification inputs; refreshed dependencies remove advisories with compatible fixes. Node and host compatibility floors were raised to match Nuxt.
+The module/client API, loopback endpoint rules, explicit connection behavior and license terms are retained. Remaining advisories and untested environments must be assessed before release.

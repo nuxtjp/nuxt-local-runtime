@@ -15,7 +15,7 @@ const localRuntimeModule: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOpt
   meta: {
     name: '@nuxtjp/local-runtime',
     configKey: 'nuxtJpLocalRuntime',
-    compatibility: { nuxt: '^4.5.0' }
+    compatibility: { nuxt: '^4.5.1' }
   },
   defaults: {
     endpoint: 'http://127.0.0.1:37843',
