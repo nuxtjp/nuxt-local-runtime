@@ -16,7 +16,8 @@
     "LICENSE",
     "README.md",
     "NOTICE",
-    "LICENSE-PREVIOUS"
+    "LICENSE-PREVIOUS",
+    "README.ja.md"
   ],
   "main": "./dist/module.mjs",
   "types": "./dist/types.d.mts",
