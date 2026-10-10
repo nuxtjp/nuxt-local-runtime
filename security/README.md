@@ -19,3 +19,5 @@ The RSA test creates an ephemeral key in memory and never reads a user key. Patc
 Run `pnpm audit --json` on the installed application and retain the report. Only the two backported braces/node-forge advisories may remain; any other advisory, including simple-git, its argument parser, or esbuild, blocks validation. Run the dependency regression command on each install to reject missing or older active versions.
 
 The code patch inputs retain third-party notices in `LICENSE-braces` (MIT) and `LICENSE-node-forge`. The original dependencies remain registry packages; the shipped files configure and test the consumer rather than silently replacing its package manager.
+
+The simple-git 4.0.2 compatibility patch restores only the legacy ESM default factory used by Nuxt devtools. It aliases the existing, fixed `simpleGit` factory and does not change argument validation, executable selection, or Git execution. The named factory remains identical. `LICENSE-simple-git` retains its upstream MIT notice. A fresh consumer build and type check with devtools enabled are mandatory release checks.

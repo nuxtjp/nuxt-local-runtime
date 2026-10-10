@@ -42,7 +42,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Verify backports in a fresh packed consumer
-        run: node .github/scripts/package-consumer-security.mjs "$RUNNER_TEMP/nuxtjp-local-runtime-0.1.3.tgz" @nuxtjp/local-runtime
+        run: node .github/scripts/package-consumer-security.mjs "$RUNNER_TEMP/nuxtjp-local-runtime-0.1.4.tgz" @nuxtjp/local-runtime
   rust-host:
     runs-on: ubuntu-latest
     timeout-minutes: 15

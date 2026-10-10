@@ -1,0 +1,11 @@
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -2890,6 +2890,7 @@
+   xe as TaskConfigurationError,
+   Sn as grepQueryBuilder,
+   ko as pathspec,
+-  wo as simpleGit
++  wo as simpleGit,
++  wo as default
+ };
+ //# sourceMappingURL=index.mjs.map

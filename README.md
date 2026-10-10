@@ -6,10 +6,10 @@ Connect a browser interface to one explicitly configured local Rust runtime, aft
 
 ## Install and use
 
-Version `0.1.1` is published on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
+Install the package version `0.1.4` after it is available on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
 
 ```sh
-npm install @nuxtjp/local-runtime@0.1.0
+npm install @nuxtjp/local-runtime@0.1.4
 ```
 
 ```ts

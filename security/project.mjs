@@ -3,7 +3,7 @@ import { existsSync, lstatSync, readFileSync, mkdirSync, writeFileSync, renameSy
 import { join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
-const patches = ['braces@3.0.3', 'node-forge@1.4.0']
+const patches = ['braces@3.0.3', 'node-forge@1.4.0', 'simple-git@4.0.2']
 function regular(path) {
   const stat = lstatSync(path)
   if (stat.isSymbolicLink() || !stat.isFile() || stat.size > 1024 * 1024) {

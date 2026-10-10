@@ -57,3 +57,14 @@ test('active dependency graph uses every required upstream security version', ()
     for (const manifest of matches) assert.equal(JSON.parse(fs.readFileSync(manifest, 'utf8')).version, version, name);
   }
 });
+
+// Preserve the ESM entry point expected by current Nuxt devtools without downgrading Git protections.
+test('fixed simple-git retains named and legacy ESM factory exports', async () => {
+  const { pathToFileURL } = require('node:url');
+  const { installedDependencies } = require('./resolved-dependency.cjs');
+  for (const manifest of installedDependencies(process.cwd(), 'simple-git', '4.0.2')) {
+    const module = await import(pathToFileURL(path.join(path.dirname(manifest), 'dist/index.mjs')).href);
+    assert.equal(typeof module.simpleGit, 'function');
+    assert.equal(module.default, module.simpleGit);
+  }
+});
