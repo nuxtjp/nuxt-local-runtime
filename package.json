@@ -1,6 +1,6 @@
 {
   "name": "@nuxtjp/local-runtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Fail-closed Nuxt client for a loopback local runtime",
   "type": "module",
   "license": "Apache-2.0",
@@ -17,7 +17,8 @@
     "README.md",
     "NOTICE",
     "LICENSE-PREVIOUS",
-    "README.ja.md"
+    "README.ja.md",
+    "security"
   ],
   "main": "./dist/module.mjs",
   "types": "./dist/types.d.mts",
@@ -43,22 +44,24 @@
   "scripts": {
     "build": "nuxt-module-build build && nuxt build playground",
     "typecheck": "vue-tsc --noEmit --project tsconfig.json",
-    "test": "vitest run",
-    "prepack": "pnpm run test && pnpm run typecheck && pnpm run build"
+    "test": "vitest run && pnpm run test:dependency-security && pnpm run test:consumer-security",
+    "prepack": "pnpm run test && pnpm run typecheck && pnpm run build",
+    "test:dependency-security": "node --test scripts/dependency-security.check.cjs",
+    "test:consumer-security": "node --test scripts/consumer-security.test.mjs"
   },
   "peerDependencies": {
     "nuxt": "^4.5.1",
     "vue": "^3.5.40"
   },
   "dependencies": {
-    "@nuxt/kit": "4.5.1",
+    "@nuxt/kit": "4.5.2",
     "@nuxt/schema": "4.5.1"
   },
   "devDependencies": {
     "@nuxt/module-builder": "1.0.2",
     "@types/node": "24.12.0",
     "ajv": "8.20.0",
-    "nuxt": "4.5.1",
+    "nuxt": "4.5.2",
     "typescript": "5.9.3",
     "vitest": "4.1.11",
     "vue": "3.5.43",
@@ -76,5 +79,14 @@
     "access": "public",
     "registry": "https://registry.npmjs.org",
     "provenance": true
+  },
+  "pnpm": {
+    "overrides": {
+      "@nuxt/devtools>simple-git": "4.0.2"
+    },
+    "patchedDependencies": {
+      "braces@3.0.3": "patches/braces@3.0.3.patch",
+      "node-forge@1.4.0": "patches/node-forge@1.4.0.patch"
+    }
   }
 }

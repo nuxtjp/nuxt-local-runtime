@@ -6,7 +6,7 @@ Connect a browser interface to one explicitly configured local Rust runtime, aft
 
 ## Install and use
 
-Version `0.1.0` is published on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
+Version `0.1.1` is published on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
 
 ```sh
 npm install @nuxtjp/local-runtime@0.1.0
@@ -60,7 +60,7 @@ pnpm test
 pnpm build
 ```
 
-The verification inputs pin Nuxt/kit/schema to `4.5.1`, Vue to `3.5.43` and Vitest to `4.1.11`. Compatible dependency fixes remove advisories; assess remaining advisories and untested environments before a release. Node and host compatibility floors were raised to match Nuxt.
+The verification inputs pin Nuxt/kit/schema to `4.5.2`, Vue to `3.5.43` and Vitest to `4.1.11`. Compatible dependency fixes remove advisories; assess remaining advisories and untested environments before a release. Node and host compatibility floors were raised to match Nuxt.
 The module/client API, loopback endpoint rules, explicit connection behavior and license terms are retained.
 A local TGZ test proves archive behavior, not registry availability. Operations, deployment and publication require their own permissions and settings.
 
@@ -69,3 +69,7 @@ A local TGZ test proves archive behavior, not registry availability. Operations,
 [Usage guide](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/docs/getting-started.md) · [Schemas](schemas) · [Source](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/src) · [Tests](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/test) · [Contributing](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/CONTRIBUTING.md) · [Security reporting](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/SECURITY.md)
 
 Code: [Apache-2.0](LICENSE). Retain [NOTICE](NOTICE) and the prior grants in [LICENSE-PREVIOUS](LICENSE-PREVIOUS).
+
+## Consumer dependency security
+
+See [dependency security backports](security/README.md) before installing this package in a Nuxt application. pnpm consumers must explicitly apply the included backports and verify their locked dependency tree; ordinary npm installation does not apply them.

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 const [mode, directory] = process.argv.slice(2)
 const sha = process.env.GITHUB_SHA
-const name = '@nuxtjp/local-runtime', version = '0.1.1', filename = 'nuxtjp-local-runtime-0.1.1.tgz'
+const name = '@nuxtjp/local-runtime', version = '0.1.2', filename = 'nuxtjp-local-runtime-0.1.2.tgz'
 if (!lstatSync(join(directory, filename)).isFile()) throw Error('Regular archive required')
 if (!/^[a-f0-9]{40}$/.test(sha ?? '') || process.env.GITHUB_REPOSITORY !== 'nuxtjp/nuxt-local-runtime')
   throw Error('Exact approved public source required')

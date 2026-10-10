@@ -1,0 +1,43 @@
+name: Verify public npm package
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NUXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@10.29.3
+      - name: Install reviewed lockfile and backports
+        run: pnpm install --frozen-lockfile
+      - name: Generate Nuxt playground types
+        run: pnpm exec nuxt prepare playground
+      - name: Test APIs and dependency regression cases
+        run: pnpm test
+      - name: Check types
+        run: pnpm typecheck
+      - name: Build module and playground
+        run: pnpm build
+      - name: Inspect actual archive inputs
+        run: npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP"
+      - name: Retain reviewed distribution archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: npm-package
+          path: ${{ runner.temp }}/*.tgz
+          if-no-files-found: error
+          retention-days: 7

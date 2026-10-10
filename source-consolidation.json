@@ -1,0 +1,15 @@
+{
+  "schema": "source-consolidation-v1",
+  "components": [
+    {
+      "id": "rust-v8-local-runtime",
+      "owner_id": "nuxt-local-runtime",
+      "original_repository": "nuxtjp/rust-v8-local-runtime",
+      "owner_repository": "nuxtjp/nuxt-local-runtime",
+      "subpath": "crates/rust-v8-local-runtime",
+      "source_head": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
+      "history_ref": "refs/consolidated/rust-v8-local-runtime/original-HEAD"
+    }
+  ],
+  "status": "local source consolidation; Rust/Vue ports and remote publication pending"
+}
