@@ -41,3 +41,16 @@ jobs:
           path: ${{ runner.temp }}/*.tgz
           if-no-files-found: error
           retention-days: 7
+  rust-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Install Rust 1.97.0
+        run: rustup toolchain install 1.97.0 --profile minimal --component clippy
+      - name: Verify consolidated loopback host
+        run: |
+          cargo +1.97.0 test --locked --workspace --all-features
+          cargo +1.97.0 clippy --locked --workspace --all-targets --all-features -- -D warnings
