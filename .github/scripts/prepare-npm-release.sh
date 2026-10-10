@@ -21,3 +21,5 @@ fi
 python3 .github/scripts/check-package.py "$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.2.tgz"
 node .github/scripts/package-consumer.mjs "$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.2.tgz"
 :
+
+node .github/scripts/package-consumer-security.mjs "$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.2.tgz" @nuxtjp/local-runtime
