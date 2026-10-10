@@ -15,7 +15,12 @@ for section in ['dependencies','peerDependencies','optionalDependencies']:
 for name in ['LICENSE','NOTICE','LICENSE-PREVIOUS','src/runtime/shared/types.ts','schemas/local-runtime-v1.schema.json']:
  assert files[name]==(source/name).read_bytes(),name
 assert not any(x.startswith(('.github/','playground/','test/')) or x.endswith(('.map','.tgz')) for x in files)
-assert all(x.startswith(('dist/','schemas/','src/runtime/shared/types.ts')) or x in ['package.json','README.md','README.ja.md','LICENSE','NOTICE','LICENSE-PREVIOUS'] for x in files)
+assert all(x.startswith(('dist/','schemas/','src/runtime/shared/types.ts','security/')) or x in ['package.json','README.md','README.ja.md','LICENSE','NOTICE','LICENSE-PREVIOUS'] for x in files)
 pattern=rb'ghp_[A-Za-z0-9]{20,}|npm_[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|/home/[^/\s]+/|[A-Z]:\\Users\\|https://[^ /]+:[^ /]+@'
 assert not any(re.search(pattern,v) for v in files.values()),'bounded credential/path scan failed'
 print(json.dumps({'name':m['name'],'version':m['version'],'files':len(files),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'licenses_schema_raw_types':'identical to source','bounded_scan':'pass; not a complete confidentiality proof'},indent=2))
+
+for relative, content in files.items():
+ if relative.startswith('security/'):
+  expected = pathlib.Path(__file__).resolve().parents[2] / relative
+  assert expected.is_file() and expected.read_bytes() == content, 'Security input differs from reviewed source'
