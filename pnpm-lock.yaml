@@ -17,6 +17,9 @@ patchedDependencies:
   node-forge@1.4.0:
     hash: 94e77976057f722fec0a9c528e63a45f0c43c85a610983621a51eab03b3e5908
     path: patches/node-forge@1.4.0.patch
+  simple-git@4.0.2:
+    hash: 50c470233394ca7e0c6efd04151de90a48f150e2d420d64fa091c6c0a2380e5a
+    path: security/patches/simple-git@4.0.2.patch
 
 importers:
 
@@ -4193,7 +4196,7 @@ snapshots:
       perfect-debounce: 2.1.0
       pkg-types: 2.3.3
       semver: 7.8.5
-      simple-git: 4.0.2
+      simple-git: 4.0.2(patch_hash=50c470233394ca7e0c6efd04151de90a48f150e2d420d64fa091c6c0a2380e5a)
       sirv: 3.0.2
       structured-clone-es: 2.0.1
       tinyglobby: 0.2.17
@@ -6968,7 +6971,7 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-git@4.0.2:
+  simple-git@4.0.2(patch_hash=50c470233394ca7e0c6efd04151de90a48f150e2d420d64fa091c6c0a2380e5a):
     dependencies:
       '@kwsites/file-exists': 1.1.1
       '@kwsites/promise-deferred': 1.1.1

@@ -9,7 +9,7 @@
 `0.1.1`はnpmで公開済みです。Node `^22.19.0`または`^24.11.0`、Nuxt `^4.5.1`、Vue `^3.5.40`を使用してください。
 
 ```sh
-npm install @nuxtjp/local-runtime@0.1.0
+npm install @nuxtjp/local-runtime@0.1.4
 ```
 
 ```ts

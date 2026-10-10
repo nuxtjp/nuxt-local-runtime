@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync, cpSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -18,7 +18,7 @@ const run = args => {
 }
 writeFileSync(join(project, 'package.json'), JSON.stringify({ private: true, type: 'module',
  packageManager: 'pnpm@10.29.3', dependencies: { [name]: `file:${resolve(input)}`,
- nuxt: '4.5.2', vue: '3.5.43', '@nuxt/ui': '4.11.3', '@nuxt/icon': '2.5.1' } }, null, 2))
+ nuxt: '4.5.2', vue: '3.5.43', '@nuxt/ui': '4.11.3', '@nuxt/icon': '2.5.1', typescript: '5.9.3', 'vue-tsc': '3.2.8' } }, null, 2))
 run([...pm, 'install', '--no-frozen-lockfile', '--ignore-scripts'])
 run(['node', `node_modules/${name}/security/apply.mjs`, '--project-root', '.', '--apply'])
 run([...pm, 'install', '--no-frozen-lockfile', '--ignore-scripts'])
@@ -41,3 +41,14 @@ for (const severity of ['critical', 'moderate', 'low']) {
 }
 console.log(JSON.stringify({ versionOnlyAudit: report.metadata.vulnerabilities,
  backportsVerifiedByRegressions: policy.backportedAdvisories, report: 'dependency-audit.json' }))
+
+// A successful advisory scan alone is insufficient: exercise an actual application with devtools.
+if (name === '@nuxtjp/localized-site') {
+ cpSync(new URL('../../examples/content', import.meta.url), join(project, 'content'), { recursive: true })
+}
+const modules = name === '@nuxtjp/localized-site' ? [[name, { contentRoot: './content' }]] : [name]
+writeFileSync(join(project, 'nuxt.config.ts'), `export default defineNuxtConfig(${JSON.stringify({ modules, devtools: { enabled: true }, compatibilityDate: '2025-07-15' })})\n`)
+writeFileSync(join(project, 'app.vue'), '<template><main>Distribution consumer verification</main></template>\n')
+writeFileSync(join(project, 'tsconfig.json'), '{"extends":"./.nuxt/tsconfig.json"}\n')
+run([...pm, 'exec', 'nuxt', 'build'])
+run([...pm, 'exec', 'nuxt', 'typecheck'])
