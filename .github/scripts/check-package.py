@@ -4,7 +4,7 @@ with tarfile.open(p,'r:gz') as archive:
  members=archive.getmembers();assert all(m.isfile() or m.isdir() for m in members)
  assert all(m.name.startswith('package/') and '..' not in pathlib.PurePosixPath(m.name).parts for m in members)
  files={m.name.removeprefix('package/'):archive.extractfile(m).read() for m in members if m.isfile()}
-m=json.loads(files['package.json']);assert m['name']=='@nuxtjp/local-runtime' and m['version']=='0.1.2'
+m=json.loads(files['package.json']);assert m['name']=='@nuxtjp/local-runtime' and m['version']=='0.1.3'
 assert m['license']=='Apache-2.0';assert m['repository']['url']=='git+https://github.com/nuxtjp/nuxt-local-runtime.git'
 assert m['publishConfig']=={'access':'public','registry':'https://registry.npmjs.org','provenance':True}
 assert set(m['exports'])=={'.','./client','./guards','./types','./schema'}

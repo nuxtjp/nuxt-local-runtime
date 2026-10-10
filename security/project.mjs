@@ -27,6 +27,21 @@ export function applySecurityPatches(project, source) {
   const pnpm = data.pnpm ?? {}
   const existing = pnpm.patchedDependencies ?? {}
   if (!object(existing)) throw new Error('Expected object-valued patchedDependencies')
+  const pinned = JSON.parse(regular(join(source, 'dependency-versions.json')))
+  if (pinned.schemaVersion !== 1 || !object(pinned.overrides)) throw new Error('Invalid dependency version policy')
+  const overrides = pnpm.overrides ?? {}
+  if (!object(overrides)) throw new Error('Expected object-valued dependency overrides')
+  for (const [name, version] of Object.entries(pinned.overrides)) {
+    if (!/^(?:@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(name) || !/^\d+\.\d+\.\d+$/.test(version)) {
+      throw new Error('Exact registry package versions required')
+    }
+    for (const [selector, target] of Object.entries(overrides)) {
+      const dependency = selector.split('>').at(-1)
+      if ((dependency === name || dependency.startsWith(name + '@')) && target !== version) {
+        throw new Error('A dependency override conflicts; review it before applying')
+      }
+    }
+  }
   const dir = join(root, '.nuxtjp-security')
   if (existsSync(dir) && (lstatSync(dir).isSymbolicLink() || !lstatSync(dir).isDirectory())) {
     throw new Error('Security patch directory must be a real directory')
@@ -49,7 +64,7 @@ export function applySecurityPatches(project, source) {
     if (!existsSync(patch.target)) writeFileSync(patch.target, patch.bytes, { flag: 'wx' })
     existing[patch.name] = patch.relative
   }
-  data.pnpm = { ...pnpm, patchedDependencies: existing }
+  data.pnpm = { ...pnpm, patchedDependencies: existing, overrides: { ...overrides, ...pinned.overrides } }
   const temporary = join(root, `.nuxtjp-manifest-${randomUUID()}.tmp`)
   try {
     writeFileSync(temporary, JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
