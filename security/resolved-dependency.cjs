@@ -15,7 +15,7 @@ function installedDependencies(root, target, version) {
     seen.add(file);
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (data.name === target) {
-      if (data.version !== version) throw new Error('Dependency version changed; review its security patch');
+      if (version !== undefined && data.version !== version) throw new Error('Dependency version changed; review its security patch');
       found.add(file);
     }
     const request = createRequire(file);

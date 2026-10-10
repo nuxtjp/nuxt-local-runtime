@@ -5,8 +5,6 @@ const { generateKeyPairSync, sign, privateEncrypt, constants } = require('node:c
 const path = require('node:path');
 const fs = require('node:fs');
 function dependency(name, version) {
-  const explicit = process.env['SECURITY_TEST_' + name.toUpperCase().replace('-', '_')];
-  if (explicit) return require(path.resolve(explicit));
   const { installedDependencies } = require('./resolved-dependency.cjs');
   const matches = installedDependencies(process.cwd(), name, version);
   assert.equal(matches.length, 1, 'Expected one active locked dependency implementation');
@@ -47,5 +45,15 @@ test('RSA verifier accepts standard signatures and rejects extra or malformed Di
     let accepted = false;
     try { accepted = publicKey.verify(digest, signature); } catch { /* Rejection is the expected result for a malformed signature. */ }
     assert.equal(accepted, false, 'Malformed algorithm must not verify');
+  }
+});
+
+test('active dependency graph uses every required upstream security version', () => {
+  const policy = JSON.parse(fs.readFileSync(path.join(__dirname, 'dependency-versions.json'), 'utf8'));
+  const { installedDependencies } = require('./resolved-dependency.cjs');
+  for (const [name, version] of Object.entries(policy.overrides)) {
+    const matches = installedDependencies(process.cwd(), name);
+    assert.ok(matches.length > 0, 'Required dependency is absent: ' + name);
+    for (const manifest of matches) assert.equal(JSON.parse(fs.readFileSync(manifest, 'utf8')).version, version, name);
   }
 });

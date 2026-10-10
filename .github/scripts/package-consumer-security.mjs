@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -24,3 +24,20 @@ run(['node', `node_modules/${name}/security/apply.mjs`, '--project-root', '.', '
 run([...pm, 'install', '--no-frozen-lockfile', '--ignore-scripts'])
 run([...pm, 'install', '--frozen-lockfile', '--ignore-scripts'])
 run(['node', `node_modules/${name}/security/dependency-security.check.cjs`])
+
+// Retain known backport advisories; reject every other advisory and severity.
+const policy = JSON.parse(readFileSync(new URL('../../security/dependency-versions.json', import.meta.url)))
+const audited = spawnSync(pm[0], [...pm.slice(1), 'audit', '--json'], {
+ cwd: project, encoding: 'utf8', timeout: 600000, env: process.env
+})
+assert.ok(audited.status === 0 || audited.status === 1, 'Dependency audit execution failed')
+const report = JSON.parse(audited.stdout)
+writeFileSync(join(project, 'dependency-audit.json'), JSON.stringify(report, null, 2))
+for (const advisory of Object.values(report.advisories ?? {})) {
+ assert.ok(policy.backportedAdvisories.includes(advisory.github_advisory_id), 'Unremediated advisory: ' + advisory.github_advisory_id)
+}
+for (const severity of ['critical', 'moderate', 'low']) {
+ assert.equal(report.metadata.vulnerabilities[severity], 0, 'Unexpected ' + severity + ' vulnerabilities')
+}
+console.log(JSON.stringify({ versionOnlyAudit: report.metadata.vulnerabilities,
+ backportsVerifiedByRegressions: policy.backportedAdvisories, report: 'dependency-audit.json' }))
