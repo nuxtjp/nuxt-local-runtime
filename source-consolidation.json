@@ -12,12 +12,18 @@
       "history_archive": {
         "path": "source-history/rust-v8-local-runtime/original.bundle",
         "format": "git-bundle-v2",
-        "sha256": "fdc59d854c6278e90b16e7c2b8913fde298bb7da19a3de777dd54999087978e1",
+        "sha256": "096416b04632722b9525eb207e210a08800b26bfac7996c5319e819f314350b2",
         "original_head": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
         "observed_source_refs": [
           {
             "sha": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
             "ref": "refs/heads/main"
+          }
+        ],
+        "observed_source_pull_refs": [
+          {
+            "ref": "refs/pull/1/head",
+            "sha": "c8aaca4b7192a86706f2821e34d006d6a18366bd"
           }
         ]
       }
