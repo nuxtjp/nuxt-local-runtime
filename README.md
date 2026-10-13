@@ -73,3 +73,5 @@ Code: [Apache-2.0](LICENSE). Retain [NOTICE](NOTICE) and the prior grants in [LI
 ## Consumer dependency security
 
 See [dependency security backports](security/README.md) before installing this package in a Nuxt application. pnpm consumers must explicitly apply the included backports and verify their locked dependency tree; ordinary npm installation does not apply them.
+
+[OSS responsibility and source completion](docs/oss-source-contract.md) defines the supported package boundary and required acceptance. It does not declare unexecuted source, distribution or production checks complete.
