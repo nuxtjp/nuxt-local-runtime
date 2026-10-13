@@ -1,0 +1,381 @@
+{
+  "repository": "nuxtjp/nuxt-local-runtime",
+  "purpose": "利用者の明示操作で、ブラウザ画面から設定済みのローカルRust環境へ接続できます。 / Connect a browser interface to one explicitly configured local Rust runtime.",
+  "responsibility_boundary": "Own the documented Nuxt/browser interface and its public contracts. Account authority, external effects, product state and production hosting remain explicit consumer responsibilities.",
+  "packages": [
+    {
+      "manifest": "crates/rust-v8-local-runtime/Cargo.toml",
+      "package": "nuxtjp-local-runtime-host",
+      "ecosystem": "rust",
+      "description": "Fail-closed loopback host and Rust/V8 adapter boundary for Nuxt",
+      "interfaces": {
+        "lib": "crates/rust-v8-local-runtime/src/lib.rs",
+        "features": {},
+        "bins": [],
+        "public_modules": [],
+        "public_reexports": [
+          "config::{HostConfig, load_config}",
+          "engine::{ContractSimulationEngine, ViewEngine}",
+          "error::HostError",
+          "host::LocalRuntimeHost",
+          "http::run_server",
+          "model::*",
+          "payload::{PayloadField, PayloadScalarKind, PayloadSchema}",
+          "process_engine::{\n    ProcessEngineConfig, ProcessView, ProcessViewEngine, WorkerLimits, WorkerPayload, worker_sha256,\n}",
+          "security::{BoundaryTarget, InformationBand, SessionBudget, band_allows_target}"
+        ],
+        "implicit_bins": []
+      },
+      "declared_commands": {}
+    },
+    {
+      "manifest": "package.json",
+      "package": "@nuxtjp/local-runtime",
+      "ecosystem": "npm",
+      "description": "Fail-closed Nuxt client for a loopback local runtime",
+      "interfaces": {
+        "exports": {
+          ".": {
+            "types": "./dist/types.d.mts",
+            "import": "./dist/module.mjs"
+          },
+          "./client": {
+            "types": "./dist/runtime/client/index.d.ts",
+            "import": "./dist/runtime/client/index.js"
+          },
+          "./guards": {
+            "types": "./dist/runtime/shared/guards.d.ts",
+            "import": "./dist/runtime/shared/guards.js"
+          },
+          "./types": {
+            "types": "./src/runtime/shared/types.ts",
+            "default": "./src/runtime/shared/types.ts"
+          },
+          "./schema": "./schemas/local-runtime-v1.schema.json"
+        },
+        "bin": {},
+        "main": "./dist/module.mjs",
+        "types": "./dist/types.d.mts"
+      },
+      "declared_commands": {
+        "build": "nuxt-module-build build && nuxt build playground",
+        "typecheck": "vue-tsc --noEmit --project tsconfig.json",
+        "test": "vitest run && pnpm run test:dependency-security && pnpm run test:consumer-security",
+        "prepack": "pnpm run test && pnpm run typecheck && pnpm run build",
+        "test:dependency-security": "node --test scripts/dependency-security.check.cjs",
+        "test:consumer-security": "node --test scripts/consumer-security.check.mjs"
+      }
+    }
+  ],
+  "schema_definitions": [
+    "crates/rust-v8-local-runtime/schemas/process-engine-v1.schema.json",
+    "crates/rust-v8-local-runtime/schemas/process-view-v1.schema.json",
+    "schemas/local-runtime-v1.schema.json"
+  ],
+  "test_sources": [
+    "crates/rust-v8-local-runtime/src/config/load_tests.rs",
+    "crates/rust-v8-local-runtime/src/http/boundary.rs",
+    "crates/rust-v8-local-runtime/src/http/router.rs",
+    "crates/rust-v8-local-runtime/src/payload.rs",
+    "crates/rust-v8-local-runtime/src/process_engine/config.rs",
+    "crates/rust-v8-local-runtime/src/process_engine/process.rs",
+    "crates/rust-v8-local-runtime/tests/cli.rs",
+    "crates/rust-v8-local-runtime/tests/config.rs",
+    "crates/rust-v8-local-runtime/tests/config_file_boundary.rs",
+    "crates/rust-v8-local-runtime/tests/host.rs",
+    "crates/rust-v8-local-runtime/tests/payload_contract.rs",
+    "crates/rust-v8-local-runtime/tests/process_schema.rs",
+    "crates/rust-v8-local-runtime/tests/ready_config.rs",
+    "crates/rust-v8-local-runtime/tests/ready_e2e.rs",
+    "crates/rust-v8-local-runtime/tests/session_limits.rs",
+    "crates/rust-v8-local-runtime/tests/support/mod.rs",
+    "scripts/consumer-security.check.mjs",
+    "security/project.mjs",
+    "src/runtime/client/response.ts",
+    "test/client.test.ts",
+    "test/fixtures.ts",
+    "test/schema.test.ts",
+    "test/security.test.ts"
+  ],
+  "example_sources": [
+    "crates/rust-v8-local-runtime/examples/local-ready.template.json",
+    "crates/rust-v8-local-runtime/examples/local-simulation.json",
+    "playground/app.vue",
+    "playground/nuxt.config.ts"
+  ],
+  "workflow_definitions": [
+    {
+      "path": ".github/workflows/oss-policy.yml",
+      "jobs": [
+        {
+          "job": "repository-policy",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Verify repository policy",
+              "run": "python3 .github/oss-policy-check.py",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Verify policy regression tests",
+              "run": "cd .github && python3 -m unittest discover -s policy-tests",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Check policy types",
+              "run": "python3 -m venv \"$RUNNER_TEMP/policy-types\"\n\"$RUNNER_TEMP/policy-types/bin/pip\" install -r .github/policy/requirements.txt\n\"$RUNNER_TEMP/policy-types/bin/mypy\" --strict .github/policy .github/oss-policy-check.py .github/policy-tests\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/publish-npm.yml",
+      "jobs": [
+        {
+          "job": "prepare",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Require approved public source and release tag",
+              "run": "python3 .github/scripts/release-gate.py",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "condition": null
+            },
+            {
+              "name": "Install pinned managers, build and inspect without credentials",
+              "run": "bash .github/scripts/prepare-npm-release.sh",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Bind archive to reviewed source",
+              "run": "node .github/scripts/release-archive.mjs prepare \"$RUNNER_TEMP/package-release\"",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "condition": null
+            }
+          ]
+        },
+        {
+          "job": "publish",
+          "condition": "inputs.mode != 'prepare' && vars.REGISTRY_PUBLISH_ENABLED == 'true'",
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Recheck source, gates and registry state",
+              "run": "python3 .github/scripts/release-gate.py",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": "npm install --global npm@11.21.0",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+              "condition": null
+            },
+            {
+              "name": "Verify prepared archive before authentication",
+              "run": "node .github/scripts/release-archive.mjs verify \"$RUNNER_TEMP/package-release\"",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "First staging with this repository's temporary token",
+              "run": "test -n \"$NODE_AUTH_TOKEN\"\nnpm whoami --registry=https://registry.npmjs.org > /dev/null\nnode --input-type=module -e 'const r=await fetch(\"https://registry.npmjs.org/\"+encodeURIComponent(\"@nuxtjp/local-runtime\"),{headers:{authorization:\"Bearer \"+process.env.NODE_AUTH_TOKEN},redirect:\"error\"});if(r.status!==404)throw Error(\"Bootstrap requires an authenticated missing package; inspect existing visibility/ownership\")'\nset -o pipefail\nnpm stage publish \"$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.4.tgz\" --registry=https://registry.npmjs.org --access public --provenance --ignore-scripts | tee \"$RUNNER_TEMP/npm-stage-result.txt\"\n",
+              "uses": null,
+              "condition": "inputs.mode == 'bootstrap'"
+            },
+            {
+              "name": "Subsequent staging with repository OIDC identity",
+              "run": "set -o pipefail\nnpm stage publish \"$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.4.tgz\" --registry=https://registry.npmjs.org --access public --provenance --ignore-scripts | tee \"$RUNNER_TEMP/npm-stage-result.txt\"\n",
+              "uses": null,
+              "condition": "inputs.mode == 'oidc'"
+            },
+            {
+              "name": "Record pending stage and reviewed distribution for owner approval",
+              "run": "{\n  printf '%s\\n' 'Staged only; not published. Owner: npmjs.com Staged Packages -> exact entry -> Approve with 2FA.' '```text'\n  cat \"$RUNNER_TEMP/npm-stage-result.txt\"\n  printf '%s\\n' '```' 'Reviewed release (compare downloaded staged TGZ digest before approval):' '```json'\n  cat \"$RUNNER_TEMP/package-release/release.json\"\n  printf '%s\\n' '```'\n  printf 'Run %s attempt %s; reviewed artifact %s\\n' \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" \"$REVIEWED_ARTIFACT_ID\"\n} >> \"$GITHUB_STEP_SUMMARY\"\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/source-history.yml",
+      "jobs": [
+        {
+          "job": "source-history",
+          "condition": null,
+          "runs_on": "ubuntu-24.04",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Restore original Git objects and verify every observed source ref",
+              "run": "python3 - <<'PY'\nimport hashlib,json,subprocess,tempfile\nfrom pathlib import Path\ndata=json.loads(Path('source-consolidation.json').read_text())\ncount=0\nfor component in data['components']:\n    archive=component.get('history_archive')\n    if archive is None:\n        continue\n    bundle=Path(archive['path']).resolve()\n    assert hashlib.sha256(bundle.read_bytes()).hexdigest()==archive['sha256']\n    with tempfile.TemporaryDirectory() as folder:\n        subprocess.run(['git','init','--bare','--quiet',folder],check=True)\n        subprocess.run(['git','-C',folder,'fetch','--quiet',str(bundle),'+refs/heads/*:refs/heads/*','+refs/tags/*:refs/tags/*','+refs/pull/*:refs/pull/*'],check=True)\n        subprocess.run(['git','-C',folder,'cat-file','-e',component['source_head']+'^{commit}'],check=True)\n        for reference in archive['observed_source_refs'] + archive.get('observed_source_pull_refs', []):\n            ref=reference['ref']\n            if ref.startswith('refs/heads/'):\n                ref=ref.replace('refs/heads/','refs/heads/source/',1)\n            actual=subprocess.check_output(['git','-C',folder,'rev-parse',ref],text=True).strip()\n            assert actual==reference['sha'], reference['ref']\n    count+=1\nassert count>0\nprint(f'Restored {count} source histories and all recorded refs')\nPY\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/verify-package.yml",
+      "jobs": [
+        {
+          "job": "verify",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+              "condition": null
+            },
+            {
+              "name": "Install pinned pnpm",
+              "run": "npm install --global pnpm@10.29.3",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Install reviewed lockfile and backports",
+              "run": "pnpm install --frozen-lockfile",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Generate Nuxt playground types",
+              "run": "pnpm exec nuxt prepare playground",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Test APIs and dependency regression cases",
+              "run": "pnpm test",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Check types",
+              "run": "pnpm typecheck",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Build module and playground",
+              "run": "pnpm build",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Inspect actual archive inputs",
+              "run": "npm pack --ignore-scripts --json --pack-destination \"$RUNNER_TEMP\"",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Retain reviewed distribution archive",
+              "run": null,
+              "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "condition": null
+            },
+            {
+              "name": "Verify backports in a fresh packed consumer",
+              "run": "node .github/scripts/package-consumer-security.mjs \"$RUNNER_TEMP/nuxtjp-local-runtime-0.1.4.tgz\" @nuxtjp/local-runtime",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        },
+        {
+          "job": "rust-host",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Install Rust 1.97.0",
+              "run": "rustup toolchain install 1.97.0 --profile minimal --component clippy",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Verify consolidated loopback host",
+              "run": "cargo +1.97.0 test --locked --workspace --all-features\ncargo +1.97.0 clippy --locked --workspace --all-targets --all-features -- -D warnings\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "evidence_policy": "Declarations and source paths are not proof of an executed acceptance. Exact CI head and result are recorded separately. No live accounts or production acceptance is inferred."
+}
