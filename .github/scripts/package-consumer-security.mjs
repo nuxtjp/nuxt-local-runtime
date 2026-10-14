@@ -4,7 +4,9 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-// Install the exact archive and verify consumer-applied backports against its active graph.
+// Install the exact archive and exercise every shipped backport, including the
+// Git integration fixture now optional in newer Nuxt devtools. This dependency
+// belongs to this security regression consumer, not to the distributed module.
 const [input, name] = process.argv.slice(2)
 assert.ok(input && /^@nuxtjp\/[a-z-]+$/.test(name ?? ''))
 const project = mkdtempSync(join(tmpdir(), 'nuxtjp-security-consumer-'))
@@ -18,7 +20,7 @@ const run = args => {
 }
 writeFileSync(join(project, 'package.json'), JSON.stringify({ private: true, type: 'module',
  packageManager: 'pnpm@10.29.3', dependencies: { [name]: `file:${resolve(input)}`,
- nuxt: '4.5.2', vue: '3.5.43', '@nuxt/ui': '4.11.3', '@nuxt/icon': '2.5.1', typescript: '5.9.3', 'vue-tsc': '3.2.8' } }, null, 2))
+ 'simple-git': '4.0.2', nuxt: '4.5.2', vue: '3.5.43', '@nuxt/ui': '4.11.3', '@nuxt/icon': '2.5.1', typescript: '5.9.3', 'vue-tsc': '3.2.8' } }, null, 2))
 run([...pm, 'install', '--no-frozen-lockfile', '--ignore-scripts'])
 run(['node', `node_modules/${name}/security/apply.mjs`, '--project-root', '.', '--apply'])
 run([...pm, 'install', '--no-frozen-lockfile', '--ignore-scripts'])
