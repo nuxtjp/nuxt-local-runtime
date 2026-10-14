@@ -1,57 +1,86 @@
-name: Stage reviewed npm archive
+name: Release npm package from version tag
 on:
+  push:
+    tags: ['v*', 'npm/**']
+  pull_request:
+    paths: ['.github/registry-release.json', '.github/scripts/release_plan.py', '.github/scripts/test_release_plan.py', '.github/scripts/archive_binding.py', '.github/scripts/test_archive_binding.py', '.github/workflows/publish-npm.yml']
   workflow_dispatch:
-    inputs:
-      mode:
-        type: choice
-        options: [prepare, bootstrap, oidc]
-        default: prepare
-        required: true
 permissions:
   contents: read
 concurrency:
-  group: package-publication-${{ github.repository }}
+  group: npm-release-${{ github.repository }}
   cancel-in-progress: false
 jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - run: |
+          python3 .github/scripts/test_release_plan.py
+          python3 .github/scripts/test_archive_binding.py
   prepare:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    if: github.event_name != 'pull_request' && github.ref_type == 'tag' && github.event.repository.private == false
+    needs: contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
-      archive-sha256: ${{ steps.binding.outputs.archive-sha256 }}
+      archive-name: ${{ steps.archive.outputs.archive-name }}
+      archive-sha256: ${{ steps.archive.outputs.archive-sha256 }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Require approved public source and release tag
+      - name: Admit the exact tag and successful default-branch CI
+        id: plan
         env:
-          RELEASE_MODE: ${{ inputs.mode }}
-          APPROVED_SHA: ${{ vars.REGISTRY_SECURITY_APPROVED_SHA }}
-          PUBLISH_ENABLED: ${{ vars.REGISTRY_PUBLISH_ENABLED }}
-          BOOTSTRAP_ENABLED: ${{ vars.REGISTRY_BOOTSTRAP_ENABLED }}
-        run: python3 .github/scripts/release-gate.py
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/release_plan.py npm
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24.15.0'
           package-manager-cache: false
-      - name: Install pinned managers, build and inspect without credentials
-        run: bash .github/scripts/prepare-npm-release.sh
-      - name: Bind archive to reviewed source
-        id: binding
-        run: node .github/scripts/release-archive.mjs prepare "$RUNNER_TEMP/package-release"
+      - run: npm install --global --ignore-scripts npm@12.2.0 pnpm@10.29.3
+      - name: Build and pack the selected package without publication identity
+        env:
+          INSTALL_DIRECTORY: ${{ steps.plan.outputs.install-directory }}
+          PACKAGE_DIRECTORY: ${{ steps.plan.outputs.directory }}
+          NUXT_TELEMETRY_DISABLED: '1'
+        run: |
+          set -euo pipefail
+          if test -f "$INSTALL_DIRECTORY/pnpm-lock.yaml"; then
+            pnpm --dir "$INSTALL_DIRECTORY" install --frozen-lockfile --ignore-scripts
+            pnpm --dir "$INSTALL_DIRECTORY" -r --include-workspace-root --if-present run build
+          elif test -f "$INSTALL_DIRECTORY/package-lock.json"; then
+            npm --prefix "$INSTALL_DIRECTORY" ci --ignore-scripts
+            npm --prefix "$INSTALL_DIRECTORY" run build --if-present
+          else
+            echo 'A committed dependency lock is required'; exit 1
+          fi
+          git diff --exit-code
+          mkdir -p "$RUNNER_TEMP/npm-release"
+          npm_config_ignore_scripts=true pnpm --dir "$PACKAGE_DIRECTORY" pack --pack-destination "$RUNNER_TEMP/npm-release"
+      - name: Bind archive identity and digest
+        id: archive
+        run: python3 .github/scripts/archive_binding.py prepare npm "$RUNNER_TEMP/npm-release"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         id: upload
         with:
           name: npm-release-${{ github.sha }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/package-release/
+          path: ${{ runner.temp }}/npm-release/
           if-no-files-found: error
           retention-days: 7
-          overwrite: false
   publish:
     needs: prepare
-    if: inputs.mode != 'prepare' && vars.REGISTRY_PUBLISH_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    if: vars.REGISTRY_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: npm-public
     permissions:
@@ -61,54 +90,38 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 0
           persist-credentials: false
-      - name: Recheck source, gates and registry state
-        env:
-          RELEASE_MODE: ${{ inputs.mode }}
-          APPROVED_SHA: ${{ vars.REGISTRY_SECURITY_APPROVED_SHA }}
-          PUBLISH_ENABLED: ${{ vars.REGISTRY_PUBLISH_ENABLED }}
-          BOOTSTRAP_ENABLED: ${{ vars.REGISTRY_BOOTSTRAP_ENABLED }}
-        run: python3 .github/scripts/release-gate.py
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24.15.0'
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
-      - run: npm install --global npm@11.21.0
+      - run: npm install --global --ignore-scripts npm@12.2.0
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           artifact-ids: ${{ needs.prepare.outputs.artifact-id }}
           merge-multiple: true
-          path: ${{ runner.temp }}/package-release
-      - name: Verify prepared archive before authentication
+          path: ${{ runner.temp }}/npm-release
+      - name: Verify the exact prepared archive
         env:
           EXPECTED_ARCHIVE_SHA256: ${{ needs.prepare.outputs.archive-sha256 }}
-        run: node .github/scripts/release-archive.mjs verify "$RUNNER_TEMP/package-release"
-      - name: First staging with this repository's temporary token
-        if: inputs.mode == 'bootstrap'
+        run: python3 .github/scripts/archive_binding.py verify npm "$RUNNER_TEMP/npm-release"
+      - name: Publish through the repository Trusted Publisher
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+          NODE_AUTH_TOKEN: ''
+          NPM_TOKEN: ''
+          PUBLICATION_MODE: ${{ vars.NPM_PUBLICATION_MODE }}
+          ARCHIVE_NAME: ${{ needs.prepare.outputs.archive-name }}
+          EXPECTED_ARCHIVE_SHA256: ${{ needs.prepare.outputs.archive-sha256 }}
         run: |
-          test -n "$NODE_AUTH_TOKEN"
-          npm whoami --registry=https://registry.npmjs.org > /dev/null
-          node --input-type=module -e 'const r=await fetch("https://registry.npmjs.org/"+encodeURIComponent("@nuxtjp/local-runtime"),{headers:{authorization:"Bearer "+process.env.NODE_AUTH_TOKEN},redirect:"error"});if(r.status!==404)throw Error("Bootstrap requires an authenticated missing package; inspect existing visibility/ownership")'
-          set -o pipefail
-          npm stage publish "$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.4.tgz" --registry=https://registry.npmjs.org --access public --provenance --ignore-scripts | tee "$RUNNER_TEMP/npm-stage-result.txt"
-      - name: Subsequent staging with repository OIDC identity
-        if: inputs.mode == 'oidc'
-        run: |
-          set -o pipefail
-          npm stage publish "$RUNNER_TEMP/package-release/nuxtjp-local-runtime-0.1.4.tgz" --registry=https://registry.npmjs.org --access public --provenance --ignore-scripts | tee "$RUNNER_TEMP/npm-stage-result.txt"
-      - name: Record pending stage and reviewed distribution for owner approval
-        env:
-          REVIEWED_ARTIFACT_ID: ${{ needs.prepare.outputs.artifact-id }}
-        run: |
-          {
-            printf '%s\n' 'Staged only; not published. Owner: npmjs.com Staged Packages -> exact entry -> Approve with 2FA.' '```text'
-            cat "$RUNNER_TEMP/npm-stage-result.txt"
-            printf '%s\n' '```' 'Reviewed release (compare downloaded staged TGZ digest before approval):' '```json'
-            cat "$RUNNER_TEMP/package-release/release.json"
-            printf '%s\n' '```'
-            printf 'Run %s attempt %s; reviewed artifact %s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$REVIEWED_ARTIFACT_ID"
-          } >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          if test "$PUBLICATION_MODE" = direct; then
+            npm publish "$RUNNER_TEMP/npm-release/$ARCHIVE_NAME" --access public --provenance --ignore-scripts --registry=https://registry.npmjs.org
+            python3 .github/scripts/archive_binding.py registry npm "$RUNNER_TEMP/npm-release"
+          elif test -z "$PUBLICATION_MODE" || test "$PUBLICATION_MODE" = stage; then
+            npm stage publish "$RUNNER_TEMP/npm-release/$ARCHIVE_NAME" --access public --provenance --ignore-scripts --registry=https://registry.npmjs.org
+            echo 'Stage created; formal publication still requires maintainer approval on npm.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Unknown NPM_PUBLICATION_MODE'; exit 1
+          fi
+          cat "$RUNNER_TEMP/npm-release/release-receipt.json" >> "$GITHUB_STEP_SUMMARY"
