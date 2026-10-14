@@ -9,7 +9,7 @@ Connect a browser interface to one explicitly configured local Rust runtime, aft
 Install the package version `0.1.4` after it is available on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
 
 ```sh
-npm install @nuxtjp/local-runtime@0.1.4
+npm install @nuxtjp/local-runtime
 ```
 
 ```ts
@@ -75,3 +75,6 @@ Code: [Apache-2.0](LICENSE). Retain [NOTICE](NOTICE) and the prior grants in [LI
 See [dependency security backports](security/README.md) before installing this package in a Nuxt application. pnpm consumers must explicitly apply the included backports and verify their locked dependency tree; ordinary npm installation does not apply them.
 
 [OSS responsibility and source completion](docs/oss-source-contract.md) defines the supported package boundary and required acceptance. It does not declare unexecuted source, distribution or production checks complete.
+
+Dependency updates: [repository policy](docs/dependency-updates.md).
+Registry releases: [version tags and GitHub OIDC](docs/registry-release.md).

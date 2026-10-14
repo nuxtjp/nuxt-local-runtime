@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "repository": "nuxtjp/nuxt-local-runtime",
+  "defaultBranch": "main",
+  "requiredWorkflows": [
+    "oss-policy.yml",
+    "verify-package.yml"
+  ],
+  "packages": [
+    {
+      "ecosystem": "npm",
+      "manifest": "package.json",
+      "name": "@nuxtjp/local-runtime",
+      "installDirectory": "."
+    }
+  ]
+}

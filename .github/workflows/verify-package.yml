@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
+      - name: Resolve archive names from current package manifests
+        run: python3 "$GITHUB_WORKSPACE/.github/scripts/archive_names.py"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24.15.0'
@@ -42,7 +44,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Verify backports in a fresh packed consumer
-        run: node .github/scripts/package-consumer-security.mjs "$RUNNER_TEMP/nuxtjp-local-runtime-0.1.4.tgz" @nuxtjp/local-runtime
+        run: node .github/scripts/package-consumer-security.mjs "$RUNNER_TEMP/${PACKAGE_ARCHIVE_NUXTJP_LOCAL_RUNTIME_NPM}" @nuxtjp/local-runtime
   rust-host:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -50,6 +52,8 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
+      - name: Resolve archive names from current package manifests
+        run: python3 "$GITHUB_WORKSPACE/.github/scripts/archive_names.py"
       - name: Install Rust 1.97.0
         run: rustup toolchain install 1.97.0 --profile minimal --component clippy
       - name: Verify consolidated loopback host

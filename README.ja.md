@@ -9,7 +9,7 @@
 `0.1.1`はnpmで公開済みです。Node `^22.19.0`または`^24.11.0`、Nuxt `^4.5.1`、Vue `^3.5.40`を使用してください。
 
 ```sh
-npm install @nuxtjp/local-runtime@0.1.4
+npm install @nuxtjp/local-runtime
 ```
 
 ```ts
@@ -69,3 +69,6 @@ module/client API、loopback endpointの規則、明示接続の動作、ライ�
 [使い方](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/docs/getting-started.md) · [Schema](schemas) · [実装](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/src) · [テスト](https://github.com/nuxtjp/nuxt-local-runtime/tree/main/test) · [貢献方法](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/CONTRIBUTING.md) · [セキュリティ報告](https://github.com/nuxtjp/nuxt-local-runtime/blob/main/SECURITY.md)
 
 コードは[Apache-2.0](LICENSE)です。[NOTICE](NOTICE)と[以前の許諾](LICENSE-PREVIOUS)を保持してください。
+
+Dependency updates: [repository policy](docs/dependency-updates.md).
+Registry releases: [version tags and GitHub OIDC](docs/registry-release.md).
