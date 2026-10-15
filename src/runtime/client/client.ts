@@ -28,6 +28,7 @@ export class LocalRuntimeClient {
   private readonly fetcher: typeof fetch
   private readonly maximumResponseBytes: number
   private readonly timeoutMilliseconds: number
+  private operation = 0
   private grant: SessionGrant | null = null
   private runtimeManifest: LocalRuntimeManifest | null = null
 
@@ -50,6 +51,7 @@ export class LocalRuntimeClient {
   }
 
   async manifest(): Promise<LocalRuntimeManifest> {
+    const operation = this.operation
     const value = await localJson(
       this.fetcher,
       runtimeUrl(this.endpoint, '/v1/manifest'),
@@ -61,6 +63,7 @@ export class LocalRuntimeClient {
       || !value.security.allowed_origins.includes(this.origin)) {
       throw new Error('invalid runtime manifest')
     }
+    if (operation !== this.operation) throw new Error('local runtime operation was superseded')
     this.runtimeManifest = value
     return value
   }
@@ -77,6 +80,12 @@ export class LocalRuntimeClient {
     if (capabilities.some(capability => !available.has(capability))) {
       throw new Error('requested capability is not declared')
     }
+    const runtimeManifest = this.runtimeManifest
+    const operation = ++this.operation
+    const previous = this.grant
+    this.grant = null
+    if (previous) await this.revoke(previous.token)
+    if (operation !== this.operation) throw new Error('local runtime operation was superseded')
     const request: SessionRequest = {
       schema: 'nuxtjp://local-runtime/session-request/v1',
       origin: this.origin,
@@ -96,7 +105,7 @@ export class LocalRuntimeClient {
       ? [...value.granted_capabilities].sort()
       : []
     const now = Math.floor(Date.now() / 1000)
-    const limits = this.runtimeManifest.security.limits
+    const limits = runtimeManifest.security.limits
     if (!isSessionGrant(value)
       || value.audience !== this.origin
       || value.expires_at_unix_seconds <= now
@@ -105,6 +114,12 @@ export class LocalRuntimeClient {
       || value.budget.max_messages > limits.max_messages_per_minute
       || value.budget.max_bytes > limits.max_bytes_per_minute) {
       throw new Error('invalid runtime session grant')
+    }
+    if (operation !== this.operation) {
+      try { await this.revoke(value.token) } catch {
+        throw new Error('superseded runtime session cleanup failed')
+      }
+      throw new Error('local runtime operation was superseded')
     }
     this.grant = value
     return value
@@ -117,6 +132,9 @@ export class LocalRuntimeClient {
     if (!this.grant.granted_capabilities.includes(capabilityId)) {
       throw new Error('capability was not granted')
     }
+    const operation = this.operation
+    const grant = this.grant
+    const runtimeManifest = this.runtimeManifest
     const request: ViewRequest = {
       schema: 'nuxtjp://local-runtime/view-request/v1',
       capability_id: capabilityId,
@@ -126,11 +144,14 @@ export class LocalRuntimeClient {
     const value = await localJson(
       this.fetcher,
       runtimeUrl(this.endpoint, '/v1/view'),
-      localRequest('POST', { body: request, token: this.grant.token }),
+      localRequest('POST', { body: request, token: grant.token }),
       this.maximumResponseBytes,
       this.timeoutMilliseconds
     )
-    const capability = this.runtimeManifest.capabilities
+    if (operation !== this.operation || this.grant !== grant) {
+      throw new Error('local runtime operation was superseded')
+    }
+    const capability = runtimeManifest.capabilities
       .find(item => item.id === capabilityId)
     if (!capability
       || !isViewEnvelope(value, capability.payload_schema)
@@ -142,9 +163,13 @@ export class LocalRuntimeClient {
   }
 
   async disconnect(): Promise<void> {
+    ++this.operation
     const token = this.grant?.token
     this.grant = null
-    if (!token) return
+    if (token) await this.revoke(token)
+  }
+
+  private async revoke(token: string): Promise<void> {
     await localJson(
       this.fetcher,
       runtimeUrl(this.endpoint, '/v1/session'),
