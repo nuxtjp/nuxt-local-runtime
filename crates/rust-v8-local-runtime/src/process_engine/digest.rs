@@ -9,7 +9,14 @@ pub(super) fn reader(source: &mut impl Read) -> Result<String, crate::HostError>
     loop {
         let count = source.read(&mut buffer)?;
         if count == 0 {
-            return Ok(format!("{:x}", hasher.finalize()));
+            return Ok((hasher.finalize()).iter().fold(
+                String::with_capacity(64),
+                |mut encoded, byte| {
+                    use std::fmt::Write as _;
+                    write!(encoded, "{byte:02x}").expect("writing to String cannot fail");
+                    encoded
+                },
+            ));
         }
         hasher.update(&buffer[..count]);
     }
