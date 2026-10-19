@@ -92,5 +92,12 @@
       "node-forge@1.4.0": "patches/node-forge@1.4.0.patch",
       "simple-git@4.0.2": "security/patches/simple-git@4.0.2.patch"
     }
-  }
+  },
+  "keywords": [
+    "nuxt",
+    "rust",
+    "local-first",
+    "ipc",
+    "developer-tools"
+  ]
 }
