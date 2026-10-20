@@ -54,8 +54,8 @@ impl SessionStore {
         {
             return Err(HostError::Replay);
         }
-        let token = random_token();
-        let session_id = random_token();
+        let token = random_token()?;
+        let session_id = random_token()?;
         let expires_at = input.now.saturating_add(input.ttl);
         self.client_nonces
             .insert(input.client_nonce.to_string(), expires_at);
