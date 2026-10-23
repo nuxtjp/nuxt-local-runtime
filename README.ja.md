@@ -6,7 +6,7 @@
 
 ## 導入と使い方
 
-`0.1.1`はnpmで公開済みです。Node `^22.19.0`または`^24.11.0`、Nuxt `^4.5.1`、Vue `^3.5.40`を使用してください。
+公開版は `npm view @nuxtjp/local-runtime version` で確認してください。Nuxt `^4.6.2`、Vue `^3.5.40`、Node.js 22.19以降または24.11以降を使用します。
 
 ```sh
 npm install @nuxtjp/local-runtime
@@ -60,7 +60,7 @@ pnpm test
 pnpm build
 ```
 
-検証入力はNuxt/kit/schema `4.5.1`、Vue `3.5.43`、Vitest `4.1.11`に固定しています。互換性のある依存修正でadvisoryを減らしましたが、残るadvisoryと未検証環境はリリース前に評価してください。Nodeとhostの最低条件はNuxtに合わせて引き上げています。
+検証用の依存と固定版はpackage.json・pnpm-lock.yamlを正本とします。独立consumer CIで実配布物と共通セキュリティ処理を検証し、他の環境の受入れとは区別します。
 module/client API、loopback endpointの規則、明示接続の動作、ライセンス条件は維持しています。
 ローカルTGZの試験は配布物の動作確認であり、registryの配布確認とは別です。操作・配備・公開には、それぞれの権限と設定が必要です。
 

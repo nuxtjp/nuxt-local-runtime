@@ -28,7 +28,7 @@ run([...pm, 'install', '--frozen-lockfile', '--ignore-scripts'])
 run(['node', `node_modules/${name}/security/dependency-security.check.cjs`])
 
 // Retain known backport advisories; reject every other advisory and severity.
-const policy = JSON.parse(readFileSync(new URL('../../security/dependency-versions.json', import.meta.url)))
+const policy = JSON.parse(readFileSync(new URL(import.meta.resolve('@nuxtjp/dependency-security/policy'))))
 const audited = spawnSync(pm[0], [...pm.slice(1), 'audit', '--json'], {
  cwd: project, encoding: 'utf8', timeout: 600000, env: process.env
 })

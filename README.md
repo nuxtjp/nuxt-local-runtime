@@ -6,7 +6,7 @@ Connect a browser interface to one explicitly configured local Rust runtime, aft
 
 ## Install and use
 
-Install the package version `0.1.4` after it is available on npm. Use Node `^22.19.0` or `^24.11.0`, Nuxt `^4.5.1` and Vue `^3.5.40`.
+Install the published version identified by `npm view @nuxtjp/local-runtime version`. Use Nuxt `^4.6.2`, Vue `^3.5.40`, and Node.js 22.19+ or 24.11+.
 
 ```sh
 npm install @nuxtjp/local-runtime
@@ -60,7 +60,7 @@ pnpm test
 pnpm build
 ```
 
-The verification inputs pin Nuxt/kit/schema to `4.5.2`, Vue to `3.5.43` and Vitest to `4.1.11`. Compatible dependency fixes remove advisories; assess remaining advisories and untested environments before a release. Node and host compatibility floors were raised to match Nuxt.
+The exact verification dependencies are declared in package.json and pnpm-lock.yaml. Consumer CI exercises the reviewed archive and shared security tool; other environments require their own acceptance.
 The module/client API, loopback endpoint rules, explicit connection behavior and license terms are retained.
 A local TGZ test proves archive behavior, not registry availability. Operations, deployment and publication require their own permissions and settings.
 
