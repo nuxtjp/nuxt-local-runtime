@@ -8,26 +8,9 @@
       "owner_repository": "nuxtjp/nuxt-local-runtime",
       "subpath": "crates/rust-v8-local-runtime",
       "source_head": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
-      "local_history_ref": "refs/consolidated/rust-v8-local-runtime/original-HEAD",
-      "history_archive": {
-        "path": "source-history/rust-v8-local-runtime/original.bundle",
-        "format": "git-bundle-v2",
-        "sha256": "096416b04632722b9525eb207e210a08800b26bfac7996c5319e819f314350b2",
-        "original_head": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
-        "observed_source_refs": [
-          {
-            "sha": "f653e3fdbe3be76fb046f639630dfeaeadc8bd80",
-            "ref": "refs/heads/main"
-          }
-        ],
-        "observed_source_pull_refs": [
-          {
-            "ref": "refs/pull/1/head",
-            "sha": "c8aaca4b7192a86706f2821e34d006d6a18366bd"
-          }
-        ]
-      }
+      "retired_archive_sha256": "096416b04632722b9525eb207e210a08800b26bfac7996c5319e819f314350b2"
     }
   ],
-  "status": "Source consolidated and maintained; original Git history is preserved in source-history bundles. Registry availability is recorded separately for each released package and version."
+  "status": "Current source is maintained only in this owner. Original repository and fixed SHA are provenance, not active sources. History archives and restoration are retired. Package manifests and the owner publication workflow define registry identities; registry availability must be checked independently.",
+  "owner_repository": "nuxtjp/nuxt-local-runtime"
 }
