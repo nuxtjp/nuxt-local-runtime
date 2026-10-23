@@ -1,23 +1,13 @@
-# Dependency security backports
+# Dependency security maintenance
 
-Two upstream dependencies have no fixed release: braces 3.0.3 (GHSA-vfj7-8cjw-p6xm) and node-forge 1.4.0 (GHSA-86w9-cpqp-85rv). The root configuration also requires simple-git 4.0.2, @simple-git/argv-parser 2.0.1 and esbuild 0.28.2 from the public registry to address their upstream advisories. Exact versions are maintained in `dependency-versions.json`. The included patches bound brace AST recursion and reject malformed RSA DigestAlgorithm parameters. Regression tests cover ordinary behavior and the malicious input shapes.
-
-The package is distributed through npm. A consumer must use pnpm 10 and explicitly configure the reviewed backports at its project root. Dependency packages cannot impose root-level npm overrides or pnpm patches on a consuming application. Installing this module alone does not apply the patches.
+`@nuxtjp/dependency-security` owns the reviewed policy, patches, installed dependency resolver and regression checks. This module depends on that peer-free package; its `security/apply.mjs` and `security/dependency-security.check.cjs` paths are generated compatibility entry points and contain no independent policy.
 
 ```sh
-node node_modules/@nuxtjp/local-runtime/security/apply.mjs --project-root . --apply
+pnpm exec nuxtjp-security-config --project-root . --apply
 pnpm install --no-frozen-lockfile
 pnpm install --frozen-lockfile
+pnpm exec nuxtjp-security-check --project-root .
+pnpm audit --json
 ```
 
-Commit the generated `.nuxtjp-security/*.patch`, `package.json`, and lockfile in your application. The command does not run installs, access the network, or replace an existing conflicting patch. It preserves unrelated pnpm settings. Each root application must apply the patches, including CI checkouts.
-
-Run `node node_modules/@nuxtjp/local-runtime/security/dependency-security.check.cjs` after installing the locked project to verify that the actual resolved dependencies reject the affected inputs. These are backports, not upstream fixed versions. Version-only advisory tools still report the two vulnerable upstream versions; retain their findings and link the lockfile/patch hashes and regression results. Reapply and reverify when dependency versions change. npm-only consumers require a separately reviewed override distribution; they are not certified by this pnpm procedure.
-
-The RSA test creates an ephemeral key in memory and never reads a user key. Patches contain code only and do not include credentials, customer content, or private endpoints.
-
-Run `pnpm audit --json` on the installed application and retain the report. Only the two backported braces/node-forge advisories may remain; any other advisory, including simple-git, its argument parser, or esbuild, blocks validation. Run the dependency regression command on each install to reject missing or older active versions.
-
-The code patch inputs retain third-party notices in `LICENSE-braces` (MIT) and `LICENSE-node-forge`. The original dependencies remain registry packages; the shipped files configure and test the consumer rather than silently replacing its package manager.
-
-The simple-git 4.0.2 compatibility patch restores only the legacy ESM default factory used by Nuxt devtools. It aliases the existing, fixed `simpleGit` factory and does not change argument validation, executable selection, or Git execution. The named factory remains identical. `LICENSE-simple-git` retains its upstream MIT notice. A fresh consumer build and type check with devtools enabled are mandatory release checks.
+Installation does not apply patches. Select the application explicitly and commit its generated patches, manifest and lockfile. Configuration rejects conflicts; only the shared policy's tested backport advisories may remain visible. An application build and type check with devtools enabled are required separately. Existing LICENSE-braces, LICENSE-node-forge and LICENSE-simple-git attribution is retained. Root `patches/` files are this repository's own build inputs, not another distributed security implementation.

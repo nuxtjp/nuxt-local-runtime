@@ -11,7 +11,7 @@ const globalRc = join(root, 'empty-global.npmrc'); writeFileSync(globalRc, '')
 const env = { ...process.env, NPM_CONFIG_USERCONFIG: rc, NPM_CONFIG_GLOBALCONFIG: globalRc, NPM_CONFIG_CACHE: join(root, 'empty-cache'), npm_config_registry: 'https://registry.npmjs.org', NUXT_TELEMETRY_DISABLED: '1', CI: 'true' }
 for (const k of ['NPM_TOKEN', 'NODE_AUTH_TOKEN', 'GH_TOKEN', 'GITHUB_TOKEN']) delete env[k]
 function run(args) { const p = spawnSync(args[0], args.slice(1), { cwd: source, env, encoding: 'utf8', timeout: 600000 }); console.log(p.stdout ?? ''); console.error(p.stderr ?? ''); assert.equal(p.status, 0, args.join(' ')) }
-writeFileSync(join(source, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies: { '@nuxtjp/local-runtime': `file:${archive}`, nuxt: '4.5.1', vue: '3.5.43' }, devDependencies: { typescript: '5.9.3', 'vue-tsc': '3.2.8', '@types/node': '24.12.0' } }, null, 2))
+writeFileSync(join(source, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies: { '@nuxtjp/local-runtime': `file:${archive}`, nuxt: '4.6.2', vue: '3.5.43' }, devDependencies: { typescript: '5.9.3', 'vue-tsc': '3.2.8', '@types/node': '24.12.0' } }, null, 2))
 run(['npm', 'install', '--ignore-scripts', '--no-fund', '--registry=https://registry.npmjs.org'])
 const lock = JSON.parse(readFileSync(join(source, 'package-lock.json')))
 for (const [name, value] of Object.entries(lock.packages)) {

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "rootDir": "security-source",
+    "outDir": "security",
+    "declaration": false
+  },
+  "include": [
+    "security-source/*.mts",
+    "security-source/*.cts"
+  ]
+}
