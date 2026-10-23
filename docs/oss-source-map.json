@@ -343,7 +343,7 @@
             },
             {
               "name": "Verify backports in a fresh packed consumer",
-              "run": "node .github/scripts/package-consumer-security.mjs \"$RUNNER_TEMP/nuxtjp-local-runtime-0.1.4.tgz\" @nuxtjp/local-runtime",
+              "run": "node .github/scripts/package-consumer-security.mts \"$RUNNER_TEMP/nuxtjp-local-runtime-0.1.4.tgz\" @nuxtjp/local-runtime",
               "uses": null,
               "condition": null
             }
