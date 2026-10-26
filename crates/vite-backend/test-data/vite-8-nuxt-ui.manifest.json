@@ -1,0 +1,23 @@
+{
+  "../node_modules/.pnpm/@nuxt+ui@4.12.0_454e66cb4484c4d7c3fdd76a63d745de/node_modules/@nuxt/ui/dist/runtime/components/Toast.vue": {
+    "file": "assets/Toast-BKW2bbNS.js",
+    "name": "Toast",
+    "src": "../node_modules/.pnpm/@nuxt+ui@4.12.0_454e66cb4484c4d7c3fdd76a63d745de/node_modules/@nuxt/ui/dist/runtime/components/Toast.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.ts"
+    ]
+  },
+  "src/main.ts": {
+    "file": "assets/main-BpqMtYvL.js",
+    "name": "main",
+    "src": "src/main.ts",
+    "isEntry": true,
+    "dynamicImports": [
+      "../node_modules/.pnpm/@nuxt+ui@4.12.0_454e66cb4484c4d7c3fdd76a63d745de/node_modules/@nuxt/ui/dist/runtime/components/Toast.vue"
+    ],
+    "css": [
+      "assets/main-_uh6pkNt.css"
+    ]
+  }
+}

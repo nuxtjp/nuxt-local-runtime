@@ -40,3 +40,21 @@ Parser source: https://github.com/JadedBlueEyes/vite-manifest
 
 Verification: `cargo test --locked -p nuxtjp-vite-backend` and Clippy. An independent
 Vite-built consumer must pass before a product switches its server runtime.
+
+
+## Vite module identity boundary (0.1.1)
+
+Manifest keys, `imports` and `dynamicImports` are bounded opaque module graph
+identifiers, not paths passed to the filesystem or HTML. Actual Vite 8/Nuxt UI
+output uses `../node_modules/.../Toast.vue` for a dynamic source outside the web
+root. Those source identifiers remain usable only as graph references. Empty,
+control-containing or oversized keys, missing references and unknown interface
+fields are still refused. `file`, `css` and `assets` remain strictly validated
+local relative output paths. Only those output paths reach generated tags or the
+caller's file reader. Static/dynamic graph references retain existing limits.
+
+The committed Vite 8/Nuxt UI manifest is an actual NERP hosted build fixture. It
+exercises CSS, a dynamic Toast chunk and a source outside the browser root,
+without starting Nuxt, Node SSR or a browser at product runtime. The source-only
+crate remains unpublished to crates.io; callers must pin an accepted public Git
+commit and run their actual HTTP/browser acceptance.

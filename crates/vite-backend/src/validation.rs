@@ -10,20 +10,18 @@ pub(crate) fn validate(manifest: &Manifest) -> Result<()> {
     let mut files = HashSet::new();
     let mut refs = 0usize;
     for (key, chunk) in chunks {
-        path::validate(key)?;
+        module_key(key)?;
         path::validate(&chunk.file)?;
         if !files.insert(&chunk.file) {
             return Err(Error::InvalidManifest);
         }
-        for items in [
-            &chunk.css,
-            &chunk.assets,
-            &chunk.imports,
-            &chunk.dynamic_imports,
-        ]
-        .into_iter()
-        .flatten()
-        {
+        for (items, is_module) in [
+            (&chunk.css, false),
+            (&chunk.assets, false),
+            (&chunk.imports, true),
+            (&chunk.dynamic_imports, true),
+        ] {
+            let Some(items) = items else { continue };
             if items.len() > 64 {
                 return Err(Error::Budget);
             }
@@ -32,7 +30,11 @@ pub(crate) fn validate(manifest: &Manifest) -> Result<()> {
                 return Err(Error::Budget);
             }
             for item in items {
-                path::validate(item)?;
+                if is_module {
+                    module_key(item)?;
+                } else {
+                    path::validate(item)?;
+                }
             }
         }
         for css in chunk.css.iter().flatten() {
@@ -73,6 +75,18 @@ fn depth<'a>(
     let chunk = manifest.manifest().get(key).ok_or(Error::MissingImport)?;
     for import in chunk.imports.iter().flatten() {
         depth(manifest, import, level + 1, seen)?;
+    }
+    Ok(())
+}
+
+/// Vite source/module identifiers are graph keys, never filesystem paths or URLs.
+fn module_key(value: &str) -> Result<()> {
+    if value.is_empty()
+        || value.len() > 1024
+        || value.trim() != value
+        || value.chars().any(char::is_control)
+    {
+        return Err(Error::InvalidManifest);
     }
     Ok(())
 }
