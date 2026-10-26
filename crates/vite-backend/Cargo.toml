@@ -1,6 +1,6 @@
 [package]
 name = "nuxtjp-vite-backend"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.97"
 publish = false
@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/nuxtjp/nuxt-local-runtime"
 description = "Bounded Vite asset plans for native backends; no server JavaScript"
 readme = "README.md"
-include = ["src/**", "README.md", "Cargo.toml", "LICENSE", "NOTICE"]
+include = ["src/**", "tests/**", "test-data/**", "README.md", "Cargo.toml", "LICENSE", "NOTICE"]
 
 [dependencies]
 vite-manifest = "=0.1.0"
