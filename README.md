@@ -78,3 +78,11 @@ See [dependency security backports](security/README.md) before installing this p
 
 Dependency updates: [repository policy](docs/dependency-updates.md).
 Registry releases: [version tags and GitHub OIDC](docs/registry-release.md).
+
+
+## Native Vite backend integration
+
+The separate source-only Rust crate [nuxtjp-vite-backend](crates/vite-backend/README.md)
+provides bounded production manifest plans and explicit development asset tags for
+native HTTP backends. It executes no server JavaScript and does not require the
+Rust/V8 host or the Nuxt npm module. Applications retain routing and authorization.
