@@ -45,6 +45,31 @@ jobs:
           retention-days: 7
       - name: Verify backports in a fresh packed consumer
         run: node .github/scripts/package-consumer-security.mts "$RUNNER_TEMP/${PACKAGE_ARCHIVE_NUXTJP_LOCAL_RUNTIME_NPM}" @nuxtjp/local-runtime
+  vite-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CARGO_BUILD_JOBS: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Rust 1.97.0
+        run: rustup toolchain install 1.97.0 --profile minimal --component clippy --component rustfmt
+      - name: Verify bounded native Vite asset adapter and actual packaged crate
+        run: |
+          cargo +1.97.0 fmt --check -p nuxtjp-vite-backend
+          cargo +1.97.0 test --locked -p nuxtjp-vite-backend
+          cargo +1.97.0 clippy --locked -p nuxtjp-vite-backend --all-targets -- -D warnings
+          cargo +1.97.0 package --locked -p nuxtjp-vite-backend
+      - name: Retain native source package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: vite-backend-crate
+          path: target/package/nuxtjp-vite-backend-*.crate
+          if-no-files-found: error
+          retention-days: 7
+
   rust-host:
     runs-on: ubuntu-latest
     timeout-minutes: 15
