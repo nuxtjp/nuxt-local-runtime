@@ -55,8 +55,8 @@
     "vue": "^3.5.40"
   },
   "dependencies": {
-    "@nuxt/kit": "4.6.2",
-    "@nuxt/schema": "4.6.2",
+    "@nuxt/kit": "4.6.3",
+    "@nuxt/schema": "4.6.3",
     "@nuxtjp/dependency-security": "0.2.2"
   },
   "devDependencies": {
@@ -67,7 +67,7 @@
     "typescript": "5.9.3",
     "vitest": "5.0.5",
     "vue": "3.5.44",
-    "vue-tsc": "3.3.13"
+    "vue-tsc": "3.3.14"
   },
   "repository": {
     "type": "git",
