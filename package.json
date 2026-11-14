@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "4.6.2",
-    "@nuxt/schema": "4.6.2",
+    "@nuxt/schema": "4.6.4",
     "@nuxtjp/dependency-security": "0.2.2"
   },
   "devDependencies": {
